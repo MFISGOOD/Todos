@@ -1,10 +1,11 @@
 // Server
 import {Meteor} from 'meteor/meteor';
 import {check} from 'meteor/check';
-import { Session } from 'meteor/session';
-
+import {Mongo} from 'meteor/mongo';
 import {Tasks} from '../lib/collections/tasks.js'
-import {TotalRecords} from '../lib/collections/tasks.js'
+
+Backup=new Mongo.Collection('backup');
+
 // import { Accounts } from 'meteor/accounts-base';
 // import { check } from 'meteor/check';
 // var blind = require('password-hash');
@@ -39,7 +40,7 @@ const TaskSchema=new SimpleSchema({
 Meteor.publish('tasks',function(query,projection){
   query = query || {};
   projection = projection || {};
-  let limit = projection.limit || 1000;
+  let limit = projection.limit || 10;
   let skip = projection.skip || 0;
   let fields = projection.fields || {content: 1,checked:1};
   return Tasks.find({owner:this.userId},{
@@ -49,9 +50,9 @@ Meteor.publish('tasks',function(query,projection){
     sort:{createdAt:-1}
   });
 });
-Meteor.publish('totalRecords',function(){
-  return Tasks.find({owner:this.userId});
-});
+// Meteor.publish('totalRecords',function(){
+//   return Tasks.find({owner:this.userId});
+// });
 
 Meteor.methods({
   'add-task'(task){
@@ -61,6 +62,10 @@ Meteor.methods({
       task.createdAt=new Date();
       task.owner=this.userId;
       let id=Tasks.insert(task);
+      // backup
+      task.id=id;
+      Backup.insert(task);
+      // end Backup
       return id;
     }else{
       throw new Meteor.Error("You don't have the rights to perform this action!");
@@ -83,6 +88,17 @@ Meteor.methods({
       if(eventualtask){
         fields.updateAt = new Date();
         Tasks.update(_id,{$set:fields});
+        let task=Tasks.findOne({_id:_id,owner:this.userId});
+        let backup={id:task._id,
+                    content:task.content,
+                    checked:task.checked,
+                    createdAt:task.createdAt,
+                    updateAt:task.updateAt,
+                    owner:task.owner,
+                  }
+          Backup.insert(backup);        
+        // backup
+        // end backup
         return _id;
       }else{
           throw new Meteor.Error(`you don't have any task with the _id=${_id} `);
