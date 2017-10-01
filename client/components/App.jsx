@@ -1,15 +1,16 @@
 import React, {Component} from 'react';
 import  {Route, Link, Switch , BrowserRouter,Redirect }  from 'react-router-dom';
+import { withTracker } from 'meteor/react-meteor-data';
+import {Tracker} from 'meteor/tracker';
+// import { Session } from 'meteor/session';
+
 import Login from '../views/Login.jsx';
 import Register from '../views/Register.jsx';
 import TaskList from '../views/TaskList.jsx';
 import NotFound from '../views/NotFound.jsx';
-// import { Session } from 'meteor/session';
-import {Tracker} from 'meteor/tracker';
 import { Accounts } from 'meteor/accounts-base';
 import {Tasks} from '../../lib/collections/tasks.js';
 import {TotalRecords} from '../../lib/collections/tasks.js';
-import { withTracker } from 'meteor/react-meteor-data';
 
 class Logout extends Component{
   componentWillMount(){
@@ -123,11 +124,9 @@ constructor(props){
  }
 
 componentWillMount(){
-  //  Meteor.call('getTotalTasks',function(err,res){
-  //    Session.set('nbrePages',res);
-  //  });
   Tracker.autorun((computation) => {
     Session.set('page',0);
+    Session.set('limit',10);
     if (Meteor.userId()) {
       this.setState({
         currentPath:'/',
@@ -206,6 +205,15 @@ handleSignIn(user,password){
     Meteor.loginWithPassword(user,password,this.callbackSignin);
   }
 }
+handleChangeLimit(limit){
+  limit=parseInt(limit) || 10;
+  let actualLimit=Session.get('limit') || 0;
+  // console.log(actualLimit);
+  if(limit !== actualLimit  && limit <= this.props.nbreOfRecords){
+    // console.log(`actualLimit: ${actualLimit} limit: ${limit} `);
+    Session.set('limit',limit);
+  } 
+}
 getMainContainer(){
     let main;
     if(Meteor.userId()){
@@ -218,6 +226,8 @@ getMainContainer(){
                  updateTask={this.handleUpdateTask.bind(this)}
                  filter={this.state.filter}
                  isCompleted={this.state.completed}
+                 nbreOfRecords={this.props.nbreOfRecords}
+                 changeLimit={this.handleChangeLimit.bind(this)}
                 />;
              break;
          case "/logout":
@@ -283,17 +293,11 @@ handleDeleteTask(task_id){
       console.log(err.reason);
     }else {
       console.log(`the task with the _id=${task_id} has been deleted with success.`)
-      // Meteor.call('getTotalTasks',function(err,res){
-      //   Session.set('nbrePages',res);
-      // });
     }
   });
 }
 getPage(number){
   Session.set('page',number);
-  // this.setState({
-  //   currentPage:number,
-  // });
 }
 render(){
   loginLabel=Meteor.userId() ? this.props.user?this.props.user.emails[0].address : 'Login':"Login" ;
@@ -313,7 +317,7 @@ render(){
       <div className="app-footer">
         <AppFooter
           nbreOfRecords={this.props.nbreOfRecords}
-          limit={10}
+          limit={Session.get('limit') || 10}
           currentPage={this.props.currentPage}
           getPage={this.getPage.bind(this)}
         />
@@ -322,19 +326,18 @@ render(){
   );
 }
 }
-export default  withTracker((user,tasks,page,nbreOfRecords) => {
+export default  withTracker((user,tasks,page,nbreOfRecords,limit) => {
    Meteor.call('getTotalTasks',function(err,res){
     Session.set('nbreOfRecords',res);
    });
-   let limit=10;
+   limit= Session.get('limit');
    page=Session.get('page')*limit;
    user = Meteor.user();
    const label=user ? user.emails[0].address: ' Login';
-   const tasksHandle = Meteor.subscribe('tasks');
-   const nbreOfRecordsHandle=Meteor.subscribe('totalRecords');
+   const tasksHandle = Meteor.subscribe('tasks',{},{limit:limit,skip:page});
    const loading = !tasksHandle.ready();
-   tasks = user ? Tasks.find({},{limit:limit,skip:page}).fetch():null;
-   nbreOfRecords= Tasks.find({}).count();
+   tasks = user ? Tasks.find({}).fetch():null;
+   nbreOfRecords= Session.get('nbreOfRecords');
    const listExists = !loading && !!tasks;
    return {
       currentPage:Session.get('page'),

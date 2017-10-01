@@ -1,6 +1,4 @@
-<style>
 @import url('https://fonts.googleapis.com/css?family=Roboto');
-</style>
 /*<style>
 @import url('https://fonts.googleapis.com/css?family=Tangerine');
 </style>*/
@@ -17,8 +15,9 @@ body {
   /*font-family: 'Tangerine', serif;*/
 }
 .app-container{
-  /*background-color: #f8f8f8;
-    border-color: #e7e7e7;*/
+  
+  font-family: 'Roboto', sans-serif;
+  
 }
 .taskList-container{
   padding-top: 20px;
@@ -62,7 +61,7 @@ body {
 }
 
 #search > input[type=text]:focus {
-    width: 100%;
+    width: 90%;
 }
 .logiLink{
   color: white;
@@ -106,9 +105,6 @@ body {
   border: none !important;
   box-shadow: none !important;
 }
-
-
-
 .form-control_{
   width: 100%;
   display: block;
@@ -143,7 +139,6 @@ body {
 }
 .app-footer{
   text-align: center;
-
 }
 
 @media (min-width: 768px){
@@ -190,5 +185,44 @@ body {
     filter: alpha(opacity=65);
     -webkit-box-shadow: none;
     box-shadow: none;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdownContent {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 10;
+}
+
+/* Links inside the dropdown */
+.saveLimit{
+  background-color: white; 
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  border-top-left-radius: 4;
+  border-bottom-left-radius: 4;
+}
+.panel-body-margin{
+  margin-left:5px;
+  margin-right:5px;
+}
+/* Change color of dropdown links on hover */
+.dropdownContent a:hover {background-color: #f1f1f1}
+
+/* Show the dropdown menu on hover */
+.cog:hover .dropdownContent {
+  display: block;
+}
+.limit{
+  height: 34px;
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px;
+  border-right: none;
+}
+.limitlabel{
+  padding-right: 5px;
 }
 /*end loader*/
