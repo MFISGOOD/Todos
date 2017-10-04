@@ -15,17 +15,25 @@ Platform:
 
 npm manifest: 
   {
-    "name": "todos",
-    "private": true,
+    "name": "Todos",
+    "private": false,
     "scripts": {
       "start": "meteor run"
     },
     "dependencies": {
       "babel-runtime": "^6.20.0",
+      "bootstrap": "^3.3.7",
       "meteor-node-stubs": "~0.2.4",
+      "react": "^15.6.1",
       "react-dom": "^15.6.1",
       "react-router-dom": "^4.2.2"
-    }
+    },
+    "version": "1.0.0",
+    "description": "Todo App with React",
+    "main": "index.jsx",
+    "repository": "https://github.com/MFISGOOD/Todos.git",
+    "author": "ryson",
+    "license": "MIT"
   }
 
 yarn manifest: 
@@ -72,6 +80,10 @@ Lockfile:
   bn.js@^4.0.0, bn.js@^4.1.0, bn.js@^4.1.1, bn.js@^4.4.0:
     version "4.11.8"
     resolved "https://registry.yarnpkg.com/bn.js/-/bn.js-4.11.8.tgz#2cde09eb5ee341f484746bb0309b3253b1b1442f"
+  
+  bootstrap@^3.3.7:
+    version "3.3.7"
+    resolved "https://registry.yarnpkg.com/bootstrap/-/bootstrap-3.3.7.tgz#5a389394549f23330875a3b150656574f8a9eb71"
   
   brorand@^1.0.1:
     version "1.1.0"
@@ -196,6 +208,14 @@ Lockfile:
       ripemd160 "^2.0.0"
       safe-buffer "^5.0.1"
       sha.js "^2.4.8"
+  
+  create-react-class@^15.6.0:
+    version "15.6.0"
+    resolved "https://registry.yarnpkg.com/create-react-class/-/create-react-class-15.6.0.tgz#ab448497c26566e1e29413e883207d57cfe7bed4"
+    dependencies:
+      fbjs "^0.8.9"
+      loose-envify "^1.3.1"
+      object-assign "^4.1.1"
   
   crypto-browserify@^3.11.0:
     version "3.11.1"
@@ -441,7 +461,7 @@ Lockfile:
       encoding "^0.1.11"
       is-stream "^1.0.1"
   
-  object-assign@^4.1.0:
+  object-assign@^4.1.0, object-assign@^4.1.1:
     version "4.1.1"
     resolved "https://registry.yarnpkg.com/object-assign/-/object-assign-4.1.1.tgz#2109adc7965887cfc05cbbd442cac8bfbb360863"
   
@@ -567,6 +587,16 @@ Lockfile:
       path-to-regexp "^1.7.0"
       prop-types "^15.5.4"
       warning "^3.0.0"
+  
+  react@^15.6.1:
+    version "15.6.1"
+    resolved "https://registry.yarnpkg.com/react/-/react-15.6.1.tgz#baa8434ec6780bde997cdc380b79cd33b96393df"
+    dependencies:
+      create-react-class "^15.6.0"
+      fbjs "^0.8.9"
+      loose-envify "^1.1.0"
+      object-assign "^4.1.0"
+      prop-types "^15.5.10"
   
   readable-stream@^2.0.2:
     version "2.3.3"

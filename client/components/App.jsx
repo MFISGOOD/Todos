@@ -3,14 +3,15 @@ import  {Route, Link, Switch , BrowserRouter,Redirect }  from 'react-router-dom'
 import { withTracker } from 'meteor/react-meteor-data';
 import {Tracker} from 'meteor/tracker';
 // import { Session } from 'meteor/session';
-
+import Pagination from './Pagination.jsx'
 import Login from '../views/Login.jsx';
 import Register from '../views/Register.jsx';
 import TaskList from '../views/TaskList.jsx';
 import NotFound from '../views/NotFound.jsx';
 import { Accounts } from 'meteor/accounts-base';
 import {Tasks} from '../../lib/collections/tasks.js';
-import {TotalRecords} from '../../lib/collections/tasks.js';
+import {UserSettings} from '../../lib/collections/usersettings.js';
+
 
 class Logout extends Component{
   componentWillMount(){
@@ -28,33 +29,46 @@ class Logout extends Component{
 class AppFooter extends Component{
   constructor(props){
     super(props);
-
+    
   }
-  handleGetPage(event){
-    this.props.getPage(event.target.id);
+  handleGetPage(pageNumber){
+    this.props.getPage(pageNumber -1);
   }
 
   render(){
     let nbrePages= parseInt(this.props.nbreOfRecords/this.props.limit);
     nbrePages+= (this.props.nbreOfRecords%this.props.limit == 0) ? 0 : 1;
     let links=[];
-    for (let i = 0; i < nbrePages; i++) {
-      if(i== this.props.currentPage){
-        links[i]=<a key={i} id={i} className="pagination disabled" onClick={this.handleGetPage.bind(this)}>{i}</a>;
+    for (let i = 1; i <= nbrePages; i++) {
+      if((i-1) == this.props.currentPage){
+        links[i]=<a key={i} key={i} className="pagination disabled" onClick={this.handleGetPage.bind(this,i)}>{i}</a>;
       }else{
-        links[i]=<a key={i} id={i} className="pagination" onClick={this.handleGetPage.bind(this)}>{i}</a>;
+        links[i]=<a key={i} key={i} className="pagination" onClick={this.handleGetPage.bind(this,i)}>{i}</a>;
       }
 
     }
 
     return(
       <div className="container bg-primary">
-        <div className="row">
+        {/* <div className="row">
           {
             links
           }
-        </div>
+        </div> */}
+        <div className="row" style={{color:"#fff"}}>
+          <Pagination 
+            styles={{class:"pagination"}}
+            nbreOfLinks={nbrePages}
+            maxLinkToShow={5}
+            currentLink={this.props.currentPage}
+            setActivatedLink={this.props.getPage}
 
+            />
+        </div>
+        <div className="row footer">
+           <span className="glyphicon glyphicon-envelope"></span> <a href="mailto:ryson@outlook.be">ryson@outlook.be</a>
+           <span className="pull-right"><span className="belgium-flag"></span><span className="belgium-flag"></span><span className="belgium-flag"></span>Brussels</span>
+        </div>
        </div>
     );
   }
@@ -95,7 +109,7 @@ class AppHeader extends Component{
                   <li><a href="/logout" className={this.props.loggedIn ?  "" :"disabled" }>Log out <span className="glyphicon glyphicon-log-out" ></span></a></li>
                 </ul>
               </div>
-              <div>
+              <div style={{display:'none'}}>
                 <label className="checkbox-inline">
                  <input type="checkbox" value="" onChange={this.handleCompletedTasks.bind(this)}/> Hide Completed Tasks
                 </label>
@@ -205,14 +219,25 @@ handleSignIn(user,password){
     Meteor.loginWithPassword(user,password,this.callbackSignin);
   }
 }
-handleChangeLimit(limit){
-  limit=parseInt(limit) || 10;
-  let actualLimit=Session.get('limit') || 0;
-  // console.log(actualLimit);
-  if(limit !== actualLimit  && limit <= this.props.nbreOfRecords){
-    // console.log(`actualLimit: ${actualLimit} limit: ${limit} `);
-    Session.set('limit',limit);
-  } 
+handleChangeLimit(newlimit){
+ if(newlimit)
+ {
+    newlimit=parseInt(newlimit) || 0;
+    if(newlimit <= this.props.nbreOfRecords && newlimit > 0){
+      let actualLimit=this.props.settings.limit || 0;
+      if(actualLimit){
+       Meteor.call('update-settings',Meteor.userId(),{limit:newlimit})      
+      }else{
+       Meteor.call('add-settings',{limit:newlimit});
+      } 
+    }else{
+     alert(`The value entred is not a number or is  out of the range [1 - ${this.props.nbreOfRecords}]`);
+    }
+ }
+ else
+ {
+   alert("The value entred is null");
+ }
 }
 getMainContainer(){
     let main;
@@ -228,6 +253,8 @@ getMainContainer(){
                  isCompleted={this.state.completed}
                  nbreOfRecords={this.props.nbreOfRecords}
                  changeLimit={this.handleChangeLimit.bind(this)}
+                 settings={this.props.settings}
+                 showCompletedTask={this.showCompletedTask.bind(this)}
                 />;
              break;
          case "/logout":
@@ -237,7 +264,6 @@ getMainContainer(){
            main=<NotFound />;
        }
     }else{
-
       switch(this.state.currentPath) {
         case "/"  : ;
          case "/login":
@@ -317,7 +343,7 @@ render(){
       <div className="app-footer">
         <AppFooter
           nbreOfRecords={this.props.nbreOfRecords}
-          limit={Session.get('limit') || 10}
+          limit={this.props.settings? this.props.settings.limit : 10}
           currentPage={this.props.currentPage}
           getPage={this.getPage.bind(this)}
         />
@@ -326,27 +352,33 @@ render(){
   );
 }
 }
-export default  withTracker((user,tasks,page,nbreOfRecords,limit) => {
+export default  withTracker((user,tasks,page,nbreOfRecords,settings) => {
    Meteor.call('getTotalTasks',function(err,res){
     Session.set('nbreOfRecords',res);
    });
-   limit= Session.get('limit');
-   page=Session.get('page')*limit;
    user = Meteor.user();
    const label=user ? user.emails[0].address: ' Login';
+  //  settings
+   const settingsHandle=Meteor.subscribe('usersettings');
+   settings = user ? UserSettings.find({}).fetch()[0]:{limit:10};
+   limit= settings ? settings.limit : 10;
+   page=Session.get('page')*limit;
+   //end settings
    const tasksHandle = Meteor.subscribe('tasks',{},{limit:limit,skip:page});
    const loading = !tasksHandle.ready();
    tasks = user ? Tasks.find({}).fetch():null;
    nbreOfRecords= Session.get('nbreOfRecords');
    const listExists = !loading && !!tasks;
    return {
+      settings,
       currentPage:Session.get('page'),
       loading,
       listExists,
       tasks: listExists ? tasks  : [],
       nbreOfRecords :  nbreOfRecords ?  nbreOfRecords : 0,
       user: user,
-        loggedIn:user ? true:false,
+      loggedIn:user ? true:false,
       loginLabel: user ? label.substring(0, label.indexOf('@')) : label ,
    };
 })(App);
+

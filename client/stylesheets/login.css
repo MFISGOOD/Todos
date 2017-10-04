@@ -191,6 +191,8 @@ body {
 .dropdownContent {
   display: none;
   position: absolute;
+  top: 100%;
+  left: 0%;
   background-color: #f9f9f9;
   min-width: 160px;
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
@@ -224,5 +226,68 @@ body {
 }
 .limitlabel{
   padding-right: 5px;
+}
+.footer{
+  text-align: left;
+  padding: 20px;
+  /* padding-bottom: 20px; */
+  border-top: 2px solid white;
+  color: white;
+  font-size: medium;
+  border-radius: 10px;
+}
+
+.footer > a{
+   color:white;
+   font-family: Courier New, Courier, monospace;
+   font-size: medium;
+   
+}
+.belgium-flag{
+  display: inline-block;
+  width: 6px;
+  height: 12px;
+}
+.belgium-flag:nth-child(1){
+  background-color: black;
+}
+.belgium-flag:nth-child(2){
+  background-color:yellow;
+}
+.belgium-flag:nth-child(3){
+  background-color:red;
+}
+
+.labelInput{
+  padding-top: 10px;
+  overflow: hidden;
+}
+@media (min-width: 360px) { 
+  .settings-container{
+    width:325px;
+  }
+}
+@media (min-width: 576px) { 
+  .settings-container{
+    width:350px;
+  }
+}
+
+@media (min-width: 768px) { 
+  .settings-container{
+    width:425px;
+  }
+ }
+
+@media (min-width: 992px) { 
+  .settings-container{
+    width:500px;
+  }
+ }
+
+@media (min-width: 1200px) { 
+  .settings-container{
+    width:550px;
+  }
 }
 /*end loader*/

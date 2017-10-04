@@ -8,7 +8,8 @@ handleSettings(){
 }
 handleLimit(event){
   //check the coherence of the user input
-  this.props.changeLimit(event.target.value);
+  this.props.changeLimit(this.refs.inputlimit.value);
+  this.refs.inputlimit.value='';
 }
 handleAddNewTask(event){
   event.preventDefault();
@@ -25,29 +26,38 @@ handleAddNewTask(event){
     }
   }
 }
+handleHideComletedTasks(event){
+  this.props.showCompletedTask(event.target.checked);
+}
+// handleInputChange(event){
+
+// }
 render(){
+  
     return(
       <div className="taskList-container">
          <form className="input-group item" onSubmit={this.handleAddNewTask.bind(this)}>
             <span className="input-group-addon cog"  style={{position:'relative'}} id="basic-addon1" type="submit" onClick={this.handleSettings.bind(this)}>
                 <span className="glyphicon glyphicon-cog " >
                 </span>
-                <div className="dropdownContent panel panel-info" >
+                <div className="dropdownContent panel panel-info settings-container"  >
                   <div className="panel-heading" >
-                      <div className="panel-title">Application settings 
+                      <div className="panel-title" style={{fontSize:18}}>Preferences 
                       </div>
                   </div>
                   <div  className="panel-body panel-body-margin" >
                     <div className="form-group">
-                        <label htmlFor="limit" className="">Tape the Desired number of lines.</label>
                         <div className="row">
-                          <div className={this.props.nbreOfRecords ? "input-group" : "input-group disabled"}>
+                        <label htmlFor="limit" className="labelInput col-md-3 col-sm-4 col-xs-6">Number of Lines:  </label>
+                          <div className={this.props.nbreOfRecords ? "input-group col-md-9 col-sm-8 col-xs-6" : "input-group disabled col-sm-8 col-md-9 col-xs-6"}>
                             <input type="number" className={this.props.nbreOfRecords ? "form-control_ limit" : "form-control_ disabled limit " }
 
-                              name="limit" placeholder="Numbre of lines..." 
-                              onChange={this.handleLimit.bind(this)}                   defaultChecked={10} 
+                              name="limit" placeholder={this.props.settings? `Actual value is ${this.props.settings.limit}`:"Number of lines to show.."}
+                              //onChange={this.handleLimit.bind(this)}                   
                               min={this.props.nbreOfRecords > 0 ? 1 : 0 } 
                               max={this.props.nbreOfRecords > 0 ? this.props.nbreOfRecords  : 0}        
+                              ref="inputlimit"
+                              // onChange={this.handleInputChange.bind(this)} 
                               />
                               <span className="input-group-addon input-group-addon2 saveLimit">
                                   <a href="#" ref="savelimit" id="" className="">
@@ -55,6 +65,13 @@ render(){
                                   </span>{/*save icon  */}
                                   </a>
                              </span>
+                          </div>
+                        </div>
+                        <div className="row" style={{margin:10}}>
+                        <div className={this.props.nbreOfRecords ? "input-group" : "input-group disabled"}>
+                            <label className="checkbox-inline">
+                            <input type="checkbox" value="" onChange={this.handleHideComletedTasks.bind(this)}/> Hide Completed Tasks
+                            </label>
                           </div>
                         </div>
                      </div>
@@ -68,7 +85,7 @@ render(){
               {
                 this.props.tasks.map((task)=>{
                   if(this.props.filter && this.props.filter !="" && task.content.indexOf(this.props.filter)!= -1){
-                   if(this.props.isCompleted && task.checked){
+                   if(this.props.isCompleted && !task.checked){
                      return <Task key={task._id} task={task}    deleteTask={this.props.deleteTask}
                      updateTask={this.props.updateTask}
                    /> //filtered-completed data
@@ -78,7 +95,7 @@ render(){
                  /> //filtered-data
                  }
                 }else if(!this.props.filter || this.props.filter ===""){
-                    if(this.props.isCompleted && task.checked){
+                    if(this.props.isCompleted && !task.checked){
                       return <Task key={task._id} task={task}    deleteTask={this.props.deleteTask}
                       updateTask={this.props.updateTask}
                      /> //no-filtered-completed data
