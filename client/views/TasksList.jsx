@@ -36,7 +36,7 @@ handleHideComletedTasks(event){
 
 // }
 render(){
-   
+   //don't forget to use this.props.error (see App state crudTaskError)
     return(
       <div className="taskList-container">
          <form className="input-group item" onSubmit={this.handleAddNewTask.bind(this)}>

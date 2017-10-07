@@ -72,8 +72,8 @@ body {
   /* background-color: white; */
   color: black;
   font-size: 16px;
-  padding: 24px 20px 24px 15px;
-  height: 100%;
+  padding: 10px;
+  resize: vertical;
 }
 .input-group-addon2 {
     padding: 5px 5px;
@@ -140,6 +140,17 @@ body {
 }
 .app-footer{
   text-align: center;
+}
+.NotFound-container{
+  overflow: scroll;
+  overflow-wrap: break-word;
+}
+.notfound-help{
+  text-align: center;
+}
+.notfound-help-links{
+  padding: 10px; 
+  overflow:hidden;
 }
 
 @media (min-width: 768px){

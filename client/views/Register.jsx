@@ -117,23 +117,15 @@ export default class Register extends Component{
   }
   handleSubmit(event){
     event.preventDefault();
-    try {
        let userData={
          password:this.refs.password.value,
          email:this.state.email,
          name: `${this.state.firstname} ${this.state.lastname}`,
-        //  icode:this.refs.icode.value,
        };
-      this.props.signUp(userData);
-    } catch (e) {
-
-    } finally {
-
-    }
-
-
+      this.props.signUp(userData); 
   }
   render(){
+    // this.props.signUpError
     return(
       <div className="Login-container">
         <div className="container">
@@ -144,6 +136,9 @@ export default class Register extends Component{
                         <div style={styles.signup}><a id="signinlink" href="/login" >Sign In</a></div>
                     </div>
                     <div className="panel-body" >
+                    <div style={this.props.error? {} : {display:'none'} } id="login-alert" className="alert alert-danger col-sm-12">
+                    {this.props.error || "" }
+                    </div>
                         <form id="signupform" className="form-horizontal" role="form" onSubmit={this.handleSubmit.bind(this)}>
                             <div id="signupalert" style={{display:'none'}} className="alert alert-danger">
                                 <p>Error:</p>

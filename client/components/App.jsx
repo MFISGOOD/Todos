@@ -1,126 +1,18 @@
 import React, {Component} from 'react';
-import  {Route, Link, Switch , BrowserRouter,Redirect }  from 'react-router-dom';
 import { withTracker } from 'meteor/react-meteor-data';
-import {Tracker} from 'meteor/tracker';
-// import { Session } from 'meteor/session';
-import Pagination from './Pagination.jsx'
+import { Accounts } from 'meteor/accounts-base';
+//vieuws 
 import Login from '../views/Login.jsx';
 import Register from '../views/Register.jsx';
-import TaskList from '../views/TaskList.jsx';
+import TasksList from '../views/TasksList.jsx';
 import NotFound from '../views/NotFound.jsx';
-import { Accounts } from 'meteor/accounts-base';
+//collections 
 import {Tasks} from '../../lib/collections/tasks.js';
 import {UserSettings} from '../../lib/collections/usersettings.js';
-
-
-class Logout extends Component{
-  componentWillMount(){
-    this.props.logOut();
-  }
-  render(){
-    return(
-      <div className="container" >
-       <h1>you are logged out now...</h1>
-      </div>
-    //  <Redirect to="/login" />
-    );
-  }
-}
-class AppFooter extends Component{
-  constructor(props){
-    super(props);
-    
-  }
-  handleGetPage(pageNumber){
-    this.props.getPage(pageNumber -1);
-  }
-
-  render(){
-    let nbrePages= parseInt(this.props.nbreOfRecords/this.props.limit);
-    nbrePages+= (this.props.nbreOfRecords%this.props.limit == 0) ? 0 : 1;
-    let links=[];
-    for (let i = 1; i <= nbrePages; i++) {
-      if((i-1) == this.props.currentPage){
-        links[i]=<a key={i} key={i} className="pagination disabled" onClick={this.handleGetPage.bind(this,i)}>{i}</a>;
-      }else{
-        links[i]=<a key={i} key={i} className="pagination" onClick={this.handleGetPage.bind(this,i)}>{i}</a>;
-      }
-
-    }
-
-    return(
-      <div className="container bg-primary">
-        {/* <div className="row">
-          {
-            links
-          }
-        </div> */}
-        <div className="row" style={{color:"#fff"}}>
-          <Pagination 
-            styles={{class:"pagination"}}
-            nbreOfLinks={nbrePages}
-            maxLinkToShow={5}
-            currentLink={this.props.currentPage}
-            setActivatedLink={this.props.getPage}
-
-            />
-        </div>
-        <div className="row footer">
-           <span className="glyphicon glyphicon-envelope"></span> <a href="mailto:ryson@outlook.be">ryson@outlook.be</a>
-           <span className="pull-right"><span className="belgium-flag"></span><span className="belgium-flag"></span><span className="belgium-flag"></span>Brussels</span>
-        </div>
-       </div>
-    );
-  }
-}
-class AppHeader extends Component{
- handleSearchForm(event){
-   event.preventDefault();
-   this.props.handleSearch(this.refs.searchInput.value);
- }
- handleSearchInput(event){
-   this.props.handleSearch(event.target.value);
- }
- handleCompletedTasks(event){
-   this.props.showCompletedTask(event.target.checked);
- }
-  render(){
-    return(
-       <nav className="navbar bg-primary container">
-         <ul className="nav navbar-nav navbar-left">
-          <li>
-        </li>
-          <li><form className="" onSubmit={this.handleSearchForm.bind(this)} id="search">
-            <input  type="text" name="search" ref="searchInput" placeholder="Search.." onChange={this.handleSearchInput.bind(this)}/>
-          </form></li>
-            </ul>
-          <ul className="nav navbar-nav navbar-right" >
-            <li style={{textAlign:'right'}}>
-              <div className="my-dropdown">
-                <a className=" logiLink" type="" data-toggle="dropdown" ><span className="caret"></span> {this.props.loginLabel}
-                </a>
-                <ul className="my-dropdown-content">
-                  <li><a href="/register" className={this.props.loggedIn ? "disabled": ""  }>Sign Up <span className="glyphicon glyphicon-user" >
-                    </span></a>
-                  </li>
-                  <li><a href="/login" className={this.props.loggedIn ? "disabled" : "" } >Login <span className="glyphicon glyphicon-log-in" ></span></a>
-                  </li>
-                  <li ><hr/></li>
-                  <li><a href="/logout" className={this.props.loggedIn ?  "" :"disabled" }>Log out <span className="glyphicon glyphicon-log-out" ></span></a></li>
-                </ul>
-              </div>
-              <div style={{display:'none'}}>
-                <label className="checkbox-inline">
-                 <input type="checkbox" value="" onChange={this.handleCompletedTasks.bind(this)}/> Hide Completed Tasks
-                </label>
-              </div>
-            </li>
-          </ul>
-       </nav>
-
-    );
-  }
-}
+//helpers 
+import {Logout} from './helpers/Logout';
+import {AppFooter} from './helpers/AppFooter';
+import {AppHeader} from './helpers/AppHeader';
 
 class App extends Component{
 constructor(props){
@@ -132,37 +24,21 @@ constructor(props){
      filter:'',
      completed:false,
      currentPage:this.props.currentPage,
+     loginError:null,
+     signUpError:null,
+     crudTaskError:null,
    }
    this.callbackSignin=this.callbackSignin.bind(this);
 
  }
 
 componentWillMount(){
-  Tracker.autorun((computation) => {
-    Session.set('page',0);
-    Session.set('limit',10);
-    if (Meteor.userId()) {
-      this.setState({
-        currentPath:'/',
-      });
-
-    }else{
-      this.setState({
-        currentPath:'/login',
-      });
-    }
-
-  });
+  Session.set('page',0);
+  Session.set('limit',10);
 }
 componentDidMount(){
   this.setState({
     currentPath:window.location.pathname,
-  });
-  Meteor.call('getTotalTasks',function(err,res){
-    if(err){
-
-    }else{
-    }
   });
 }
 callbackLogOut(err,res){
@@ -182,33 +58,39 @@ handleLogOut(){
    Meteor.logout(this.callbackLogOut.bind(this));
  }
 }
+callbackSignUp(err,res){
+  if(err){
+    this.setState({
+     signUpError: err.reason,
+    });
+  }else{
+    window.history.pushState(null,null,'/');
+    this.setState({
+      currentPath:'/',
+      loggedIn:true,
+      loginLabel:this.props.user?this.props.user.emails[0].address : 'Login',
+      signUpError:null,
+    });
+  }
+}
 handleSignUp(userData){
    if(!Meteor.userId()){
-     Accounts.createUser(userData, function(err,res){
-       if(err){
-         console.log(err.reason);
-       }else{
-         console.log(`The user [ email: ${userData.email},passwor: ${userData.password} ] has been created `);
-         window.history.pushState(null,null,'/');
-         this.state={
-           currentPath:'/',
-           loggedIn:true,
-           loginLabel:this.props.user?this.props.user.emails[0].address : 'Login',
-         }
-       }
-     });
+     Accounts.createUser(userData,this.callbackSignUp.bind(this));
    }
   // todo
 }//handleSignUp
 callbackSignin(err,res){
   if(err){
-    console.log(err.reason);
+    this.setState({
+     loginError: err.reason
+    });
   }else{
     Session.set('login',true);
     this.setState({
       currentPath:'/',
       loggedIn:true,
       loginLabel:this.props.user?this.props.user.emails[0].address : 'Login',
+      loginError:null
     });
 
     window.history.pushState(null,null,'/');
@@ -239,14 +121,17 @@ handleChangeLimit(newlimit){
    alert("The value entred is null");
  }
 }
-getMainContainer(){
+RyanRouter(){
     let main;
     if(Meteor.userId()){
-      switch(this.state.currentPath) {
+      switch(window.location.pathname) {
+         case "/register":window.history.pushState(null,null,'/');
+         case "/login":window.history.pushState(null,null,'/');
          case "/":
-           main=<TaskList
+           main=<TasksList
                  tasks={this.props.tasks}
                  addTask={this.handleAddTask.bind(this)}
+                 error={this.state.crudTaskError}
                  deleteTask={this.handleDeleteTask.bind(this)}
                  updateTask={this.handleUpdateTask.bind(this)}
                  filter={this.state.filter}
@@ -264,16 +149,19 @@ getMainContainer(){
            main=<NotFound />;
        }
     }else{
-      switch(this.state.currentPath) {
-        case "/"  : ;
+      switch(window.location.pathname) {
+         case "/"  : window.history.pushState(null,null,'login');
+         case "/logout":window.history.pushState(null,null,'login');
          case "/login":
            main=<Login
                signIn={this.handleSignIn.bind(this)}
+               error={this.state.loginError}
              />;
               break;
          case "/register":
            main=<Register
              signUp={this.handleSignUp.bind(this)}
+             error={this.state.signUpError}
            />;
              break;
          default:
@@ -292,17 +180,19 @@ showCompletedTask(isCompleted){
     completed:isCompleted,
   });
 }
+callbackAddTask(err,res){
+  if(err){
+    this.setState({
+      crudTaskError: err.reason,
+    });
+  }else{
+    this.setState({
+      crudTaskError: null,
+    });
+  }
+}
 handleAddTask(task){
-  Meteor.call('add-task',task,function(err,res){
-    if(err){
-      throw new Meteor.Error(err);
-    }else {
-      console.log(`the task {content:${task.content},checked:${task.checked}} has been added with success.`)
-      // Meteor.call('getTotalTasks',function(err,res){
-      //   Session.set('nbrePages',res);
-      // });
-    }
-  });
+  Meteor.call('add-task',task,this.callbackAddTask.bind(this));
 }
 handleUpdateTask(task_id,fields){
   Meteor.call('update-task',task_id,fields,function(err,res){
@@ -338,7 +228,7 @@ render(){
        />
       </div> {/* App header */}
       <div className="app-main container ">
-           {this.getMainContainer()}
+           {this.RyanRouter()}
       </div> {/* App main*/}
       <div className="app-footer">
         <AppFooter

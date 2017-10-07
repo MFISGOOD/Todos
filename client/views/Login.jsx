@@ -1,7 +1,5 @@
 import React, {Component} from 'react';
 import {Meteor} from 'meteor/meteor';
-// import { Accounts } from 'meteor/accounts-base';
-// import  {Redirect }  from 'react-router-dom';
 
 const styles={
     forgotpassword :
@@ -41,13 +39,7 @@ export default class Login extends Component{
   }
   handleSubmit(event){
     event.preventDefault();
-    try {
-      this.props.signIn(this.state.i,this.refs.password.value);
-    }catch(e){
-    } finally {
-
-    }
-
+     this.props.signIn(this.state.i,this.refs.password.value);
   }
   handleUserNameChange(event){
     this.setState({
@@ -71,7 +63,9 @@ export default class Login extends Component{
                     <div style={styles.forgotpassword}><a href="#">Forgot password?</a></div>
                 </div>
                 <div style={{paddingTop:30}} className="panel-body" >
-                    <div style={{display:'none'}} id="login-alert" className="alert alert-danger col-sm-12"></div>
+                    <div style={this.props.error? {} : {display:'none'} } id="login-alert" className="alert alert-danger col-sm-12">
+                    {this.props.error || "" }
+                    </div>
                     <form id="loginform" className="form-horizontal" role="form" onSubmit={this.handleSubmit.bind(this)}>
                            <div style={{marginBottom: 25}} className="input-group">
                                     <span className="input-group-addon"><i className="glyphicon glyphicon-user"></i></span>
